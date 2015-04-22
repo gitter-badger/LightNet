@@ -26,16 +26,27 @@ using System.Threading.Tasks;
 
 namespace LightNet
 {
+    // For now, it's implemented for TCP connections until abstraction of this can be decided.
     public class NetLayer
     {
         CancellationTokenSource cancelSource = new CancellationTokenSource();
+        CancellationTokenSource serverCancelSource = new CancellationTokenSource();
         ConcurrentQueue<byte[]> OutgoingMessages = new ConcurrentQueue<byte[]>();
         ConcurrentQueue<byte[]> IncomingMessages = new ConcurrentQueue<byte[]>();
         int IsDisposed;
         int LoginClearance;
-        Task ServerProcess;
-        Task ClientProcess;
+        int ServerInterlock = 0;
+        Task ServerProcessTask;
+        Task ClientProcessTask;
+        TcpListener Listener = null;
         ConcurrentDictionary<IPEndPoint, TcpClient> Clients = new ConcurrentDictionary<IPEndPoint, TcpClient>();
+
+        public NetLayer()
+        {
+            ServerProcessTask = new Task(ServerProcess);
+            ClientProcessTask = new Task(MultiClientProcess);
+            ClientProcessTask.Start();
+        }
 
         public async Task<byte[]> DequeueIncomingPackets()
         {
@@ -94,34 +105,38 @@ namespace LightNet
                 return;
             await Task.Factory.StartNew(delegate()
             {
-                var client = Clients[hostAddress];
-                client.Close();
+                TcpClient client;
                 while (!Clients.TryRemove(hostAddress, out client))
                 {
                     if (cancelSource.IsCancellationRequested)
                         return;
                 }
+                client.Close();
             });
         }
 
         public IPEndPoint[] GetActiveEndPoints()
         {
-            throw new NotImplementedException();
+            return Clients.Keys.ToArray();
         }
 
-        public void ClientsEndPoints()
+        public void Listen(IPEndPoint hostAddress, int connectionLimit)
         {
-            throw new NotImplementedException();
+            var orig = Interlocked.Exchange(ref ServerInterlock, 1);
+            if (orig == 1)
+                return;
+
+            Listener = new TcpListener(hostAddress);
+            if (connectionLimit > 0)
+                Listener.Start(connectionLimit);
+            else
+                Listener.Start();
+            ServerProcessTask.Start();
         }
 
-        public void HostEndPoints()
+        public void StopListening()
         {
-            throw new NotImplementedException();
-        }
-
-        public void Listen(int connectionLimit)
-        {
-
+            serverCancelSource.Cancel();
         }
 
         public void SetMinimumUserClearance(int Limit)
@@ -135,6 +150,56 @@ namespace LightNet
             if (original == 1)
                 return;
             cancelSource.Cancel();
+        }
+
+        void ServerProcess()
+        {
+            lock (Listener)
+                while (!serverCancelSource.IsCancellationRequested)
+                {
+                    Task<TcpClient> runningTask = Listener.AcceptTcpClientAsync();
+                    runningTask.Start();
+                    Task.WaitAny(new[] { runningTask }, serverCancelSource.Token);
+                    TcpClient newClient = runningTask.Result;
+                    if (newClient == null)
+                        continue;
+                    if (!newClient.Connected)
+                        continue;
+
+                    while (!Clients.TryAdd((IPEndPoint)newClient.Client.RemoteEndPoint, newClient))
+                    {
+                        if (serverCancelSource.IsCancellationRequested)
+                            break;
+                    }
+                }
+            Listener.Stop();
+            Interlocked.Exchange(ref ServerInterlock, 0);
+        }
+
+        void MultiClientProcess()
+        {
+            while (!cancelSource.IsCancellationRequested)
+            {
+                var ClientTasks = new List<Task>();
+                var enumerate = Clients.GetEnumerator();
+                while (enumerate.MoveNext())
+                {
+                    var taskForClient = SingleClientProcess(enumerate.Current.Value, enumerate.Current.Key);
+                    taskForClient.Start();
+                    ClientTasks.Add(taskForClient);
+                }
+
+                Task.WaitAll(ClientTasks.ToArray(), cancelSource.Token);
+                ClientTasks.Clear();
+            }
+        }
+
+        async Task SingleClientProcess(TcpClient client, IPEndPoint address)
+        {
+            await Task.Factory.StartNew(delegate()
+            {
+                
+            });
         }
     }
 }

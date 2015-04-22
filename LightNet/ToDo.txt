@@ -1,0 +1,89 @@
+To Do List for LightNet Project
+
+[Core]
+	[ ] Implement Network Layer
+		[ ] Support Service Message Encoding and Decoding
+		[ ] Support Login Mechanism
+		[ ] Support Peer/Server Discovery Mechanism
+		[ ] Support Packet Routing Mechanism
+			[ ] CJDNS Meshnet Routing Mechanism
+			[ ] Internal IP Routing
+			[ ] More?
+		[ ] Handle Potential Exceptions
+			[ ] Logging Exceptions
+			[ ] Event Calls
+			[ ] Resolving Exceptions
+		[ ] Reliably Handle Multiple Clients
+			[ ] Support Peering Between Clients
+			[ ] Limit by Permission/Rights
+			[ ] IP Blocking
+			[ ] Notifying Peer Mechanism
+		[ ] Implement Reliable UDP
+
+	[ ] Implement Cryptography Layer
+		[ ] Implement Cryptography
+			[ ] DH/AES256
+			[ ] DH (Secure 64 bits to 1024 bits)/Threefish (256/512/1024)
+			[ ] ECDH/Threefish (256/512/1024)
+			[ ] None
+		[ ] Implement Message Authentication Code
+			[ ] AES256
+			[ ] Threefish (256/512/1024)
+			[ ] None
+		[ ] Implement Different Key Recycle Behavior
+			[ ] Chained Key Exchange Behavior
+				[ ] Generate Asynchronously as Background Thread (Should not resource hog)
+			[ ] One Timed Key Exchange Behavior
+			[ ] None
+		[ ] Reliably Handle Various Exceptions
+			[ ] Resolving Key Exchange Conflicts
+
+	[ ] Implement Service Layer
+		[ ] Limit # of services that can be automatically created for clients
+		[ ] Event Call for Service when an error has occured
+		[ ] Implement Helper Objects for Service (Streaming Large Content)
+		[ ] Enable Service to Support Multiple Clients as a Domain Service (Example: IRC Style Chat Channel)
+		[ ] Optionally Allow ServiceManager to support Feedbacks from Service
+
+	[ ] SQLite Cache/Storage
+		[ ] Database Encryption
+			[ ] Password Based Hash
+			[ ] None
+		[ ] Program State Export
+			[ ] Network Layer IP Ban Exports
+			[ ] Services State Export
+			[ ] Crypto Layer Key Export
+		[ ] User Account and Logins
+			[ ] Extensible User Attributes
+			[ ] Service Attributes (Expando Object)
+			[ ] IP Address/Suspicion Validation
+			[ ] Permissions/Roles/Group/Attributes
+		[ ] LINQ 2 DB Mapping
+		[ ] Encrypt Serialized Cache
+
+	[ ] Permission and Attributes
+		[ ] Abstraction Layer for Permissions
+		[ ] Implement Standard/Common Permissions
+		[ ] Implement Multiple Level Permissions Heirarchy (Group > Roles > Permissions > Attributes)
+
+	[ ] Implement Standard Services
+		[ ] Test Demostration Service
+		[ ] File Share Service
+		[ ] Chat Domain Service (Optionally Interface with File Share Service to support File Sharing between Users)
+		[ ] Video Player Domain Service (Streaming Video)
+		[ ] Remote Process Execution (With Redirected Standard Input/Output)
+		[ ] Command Prompt / Bash Service
+		[ ] Proxy Service
+		[ ] NetworkManager Console Service (Accessing the NetworkManager itself)
+
+	[ ] Performance and Optimization
+
+	[ ] Testing and Stability
+		[ ] Nunit Testing Framework Compatibility
+
+	[ ] Security Peer Review
+
+	[ ] Full Code Review
+
+[Abstraction/Extensibility]
+	[ ] Service Abstracts

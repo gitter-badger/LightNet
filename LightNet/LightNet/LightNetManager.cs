@@ -28,7 +28,7 @@ namespace LightNet
         Task IncomingServiceMessageProcessingTask;
         Task OutgoingServiceMessageProcessingTask;
         CancellationTokenSource cancelSource = new CancellationTokenSource();
-        volatile bool IsDisposed;
+        int IsDisposed;
         ServiceMessageBalancer balancer = new ServiceMessageBalancer();
         #endregion
         #region Constructor
@@ -59,8 +59,9 @@ namespace LightNet
 
         public void Dispose()
         {
-            if (IsDisposed) return;
-            IsDisposed = true;
+            var orig = Interlocked.Exchange(ref IsDisposed, 1);
+            if (orig == 1)
+                return;
 
             cancelSource.Cancel();
             Task.WaitAll(IncomingServiceMessageProcessingTask, OutgoingServiceMessageProcessingTask);
