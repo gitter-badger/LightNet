@@ -37,11 +37,12 @@ namespace LightNet
             {
                 return _serviceID;
             }
-            internal set
-            {
-                Interlocked.Exchange(ref _serviceID, value);
-            }
         }
+
+        /// <summary>
+        /// This indictate whether or not if this service can handle multiple clients at once or not.
+        /// </summary>
+        public bool IsADomainService;
 
         /// <summary>
         /// Reserved Methods for Network Manager to recieve message from it's recipients

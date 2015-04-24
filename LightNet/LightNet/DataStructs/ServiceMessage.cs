@@ -20,7 +20,7 @@ using System.Net;
 
 namespace LightNet
 {
-    public class ServiceMessage
+    public sealed class ServiceMessage
     {
         IPEndPoint AddressTo;
         IPEndPoint AddressFrom;

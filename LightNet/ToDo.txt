@@ -45,6 +45,10 @@ To Do List for LightNet Project
 		[ ] Enable Service to Support Multiple Clients as a Domain Service (Example: IRC Style Chat Channel)
 		[ ] Optionally Allow ServiceManager to support Feedbacks from Service
 
+	[ ] Fix Serializer/Deserializer
+		[ ] Use NetSerializer2 in favor of Salar.Bois
+		[ ] Rewrite ByteServiceStream to support NetSerializer2
+
 	[ ] SQLite Cache/Storage
 		[ ] Database Encryption
 			[ ] Password Based Hash

@@ -1,0 +1,11 @@
+4/24/2015 1:20 AM
+
+Added dependencies for Sqlite LINQ Nuget Packages for future implementation for Sqlite Database support in LightNet project.
+
+Created TestService.cs for demostrating what a Service will most likely looks like in it's simpliest form.
+
+Changed Service.cs to add boolean for checking whether if service is a domain service or not. Domain service is
+a service that is capable of handling multiple clients at once as a single service.
+It can be used like a chat channel for an example.
+
+Added new requirement in ToDo.txt for replacing Salar.Bois in favor of NetSerializer2.

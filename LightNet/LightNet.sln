@@ -5,6 +5,12 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightNet", "LightNet\LightNet.csproj", "{B693F388-4A7F-48EC-9E50-22399CE495E0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{472B40DA-4435-414A-9D3C-2303476726AB}"
+	ProjectSection(SolutionItems) = preProject
+		Changes.txt = Changes.txt
+		ToDo.txt = ToDo.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
