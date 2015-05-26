@@ -14,20 +14,25 @@
    limitations under the License.
 */
 
-using System;
-using System.Net;
-
 namespace LightNet
 {
-	public sealed class NetworkConfiguration
-	{
-		public IPAddress DestinationIPAddress;
-		public ushort DestinationPort;
-		public uint MinimumSymmetricKeyStrength = 128;
-		/// <summary>
-		/// Begin another key exchange cycle per 'this' amount of exchanges
-		/// </summary>
-		public uint KeyCycle = 10000;
-	}
-}
+    public class Packet
+    {
+        protected PacketID _ID;
+        protected byte[] _RawContent;
 
+        public PacketID ID { get { return _ID; } set { _ID = value; } }
+        public byte[] RawContent { get { return _RawContent; } set { _RawContent = value; } }
+
+        public Packet()
+        {
+
+        }
+
+        public Packet(PacketID id, byte[] content)
+        {
+            _ID = id;
+            _RawContent = content;
+        }
+    }
+}

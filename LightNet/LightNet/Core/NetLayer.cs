@@ -40,12 +40,12 @@ namespace LightNet
         Task ClientProcessTask;
         TcpListener Listener = null;
         ConcurrentDictionary<IPEndPoint, TcpClient> Clients = new ConcurrentDictionary<IPEndPoint, TcpClient>();
+        ConcurrentDictionary<TcpClient, CryptoLayer> ClientToCryptoLayer = new ConcurrentDictionary<TcpClient, CryptoLayer>();
 
         public NetLayer()
         {
             ServerProcessTask = new Task(ServerProcess);
-            ClientProcessTask = new Task(MultiClientProcess);
-            ClientProcessTask.Start();
+            ClientProcessTask = MultiClientProcess();
         }
 
         public async Task<byte[]> DequeueIncomingPackets()
@@ -176,29 +176,31 @@ namespace LightNet
             Interlocked.Exchange(ref ServerInterlock, 0);
         }
 
-        void MultiClientProcess()
-        {
-            while (!cancelSource.IsCancellationRequested)
-            {
-                var ClientTasks = new List<Task>();
-                var enumerate = Clients.GetEnumerator();
-                while (enumerate.MoveNext())
-                {
-                    var taskForClient = SingleClientProcess(enumerate.Current.Value, enumerate.Current.Key);
-                    taskForClient.Start();
-                    ClientTasks.Add(taskForClient);
-                }
-
-                Task.WaitAll(ClientTasks.ToArray(), cancelSource.Token);
-                ClientTasks.Clear();
-            }
-        }
-
-        async Task SingleClientProcess(TcpClient client, IPEndPoint address)
+        async Task MultiClientProcess()
         {
             await Task.Factory.StartNew(delegate()
             {
-                
+                while (!cancelSource.IsCancellationRequested)
+                {
+                    var ClientTasks = new List<Task>();
+                    var enumerate = Clients.GetEnumerator();
+                    while (enumerate.MoveNext())
+                    {
+                        var taskForClient = SingleClientProcess(enumerate.Current.Value);
+                        taskForClient.Start();
+                        ClientTasks.Add(taskForClient);
+                    }
+
+                    Task.WaitAll(ClientTasks.ToArray(), cancelSource.Token);
+                }
+            });
+        }
+
+        async Task SingleClientProcess(TcpClient client)
+        {
+            await Task.Factory.StartNew(delegate()
+            {
+
             });
         }
     }

@@ -61,7 +61,7 @@ namespace LightNet
 		/// Reserved Methods for NetworkManager to send message out to outgoing recipients
 		/// </summary>
 		/// <returns>The message.</returns>
-        public abstract byte[] SendMessage();
+        public abstract byte[] SendMessage(int size);
 	}
 }
 

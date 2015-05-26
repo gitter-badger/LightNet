@@ -14,20 +14,26 @@
    limitations under the License.
 */
 
-using System;
-using System.Net;
 
-namespace LightNet
+namespace LightNet.PacketObjects
 {
-	public sealed class NetworkConfiguration
-	{
-		public IPAddress DestinationIPAddress;
-		public ushort DestinationPort;
-		public uint MinimumSymmetricKeyStrength = 128;
-		/// <summary>
-		/// Begin another key exchange cycle per 'this' amount of exchanges
-		/// </summary>
-		public uint KeyCycle = 10000;
-	}
-}
+    public class AgreementRequestPacket : Packet
+    {
+        public byte[] Request
+        {
+            get
+            {
+                _RawContent.Take()
+            }
+            set
+            {
+                
+            }
+        }
 
+        public AgreementRequestPacket(byte[] request)
+        {
+            _RawContent = request;
+        }
+    }
+}

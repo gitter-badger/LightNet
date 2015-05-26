@@ -14,24 +14,21 @@
    limitations under the License.
 */
 
-using System;
-
 namespace LightNet
 {
-	public class User
-	{
-		public string Username;
-		public byte[] Password;
-        public DateTime Created = DateTime.UtcNow;
-		public DateTime LastLoggedIn = DateTime.UtcNow;
-        public DateTime LastModified = DateTime.UtcNow;
-		public string Group;
-		public string Role;
-		public string Title;
-		public string FirstName;
-		public string MiddleName;
-		public string LastName;
-        public int LoginClearance;
-	}
+    public enum PacketID : byte
+    {
+        Login,
+        LoginReply,
+        AgreementRequest, 
+        AgreementReply,
+        AgreementNotify,
+        AgreementPrepared,
+        AgreementError,
+        AgreementRecycle,
+        ServiceMessage,
+        ServiceAdd,
+        ServiceRemove,
+        ServiceMismatch
+    }
 }
-

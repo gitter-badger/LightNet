@@ -48,6 +48,7 @@ namespace LightNet
         int _highIndex = 0;
         int _medIndex = 0;
         int _lowIndex = 0;
+        volatile int ServiceMessageSize = short.MaxValue;
         #endregion
         #region Constructor
         public ServiceMessageBalancer()
@@ -241,7 +242,7 @@ namespace LightNet
                                     var currentServiceID = batch[index];
                                     var currentService = ServiceDirectory[currentServiceID];
                                     if (currentService.Available)
-                                        bagOfMessages.Add(new ServiceMessage(currentServiceID, currentService.SendMessage()));
+                                        bagOfMessages.Add(new ServiceMessage(currentServiceID, currentService.SendMessage(ServiceMessageSize)));
                                 }
                             return true;
                         }

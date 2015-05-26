@@ -15,19 +15,24 @@
 */
 
 using System;
-using System.Net;
 
 namespace LightNet
 {
-	public sealed class NetworkConfiguration
+	public class User
 	{
-		public IPAddress DestinationIPAddress;
-		public ushort DestinationPort;
-		public uint MinimumSymmetricKeyStrength = 128;
-		/// <summary>
-		/// Begin another key exchange cycle per 'this' amount of exchanges
-		/// </summary>
-		public uint KeyCycle = 10000;
+		public string Username;
+		public byte[] LoginKey;
+        public byte[] RecoveryKey;
+        public DateTime Created = DateTime.UtcNow;
+		public DateTime LastLoggedIn = DateTime.UtcNow;
+        public DateTime LastModified = DateTime.UtcNow;
+		public string Group;
+		public string Role;
+		public string Title;
+		public string FirstName;
+		public string MiddleName;
+		public string LastName;
+        public int LoginClearance;
 	}
 }
 
