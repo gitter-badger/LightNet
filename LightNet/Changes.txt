@@ -1,11 +1,71 @@
-4/24/2015 1:20 AM
+///////////////////////////////////////////////////////////////////////////////
+   Copyright 2015 Tyler Crandall
 
-Added dependencies for Sqlite LINQ Nuget Packages for future implementation for Sqlite Database support in LightNet project.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-Created TestService.cs for demostrating what a Service will most likely looks like in it's simpliest form.
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Changed Service.cs to add boolean for checking whether if service is a domain service or not. Domain service is
-a service that is capable of handling multiple clients at once as a single service.
-It can be used like a chat channel for an example.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+///////////////////////////////////////////////////////////////////////////////
 
-Added new requirement in ToDo.txt for replacing Salar.Bois in favor of NetSerializer2.
+
+5/28/2015 -> 5/29/2015
+A New Direction is Found...
+
+The LightNet Project is being reapproached differently to overcome the complexity of the whole project.
+LightNet will use BouncyCastle API as a baseline standard for encryption, but key agreement has a severe performance issue.
+This prompt the necessity for low level performance such as MPIR and GMP Libraries for key agreements. The Diffie-Hellman
+object will automatically determine which library to use on Windows and Linux operating system, it however WILL NOT
+support MAC OSX, because there is no real confirmation on how MPIR or GMP will be provided in MAC OSX at this time.
+
+Previously, LightNet was structured similarly to ViewNet project which is an older Networking Library, it has been
+defenestrated for this new direction.
+ViewNet is structured as a Many to One network manager and it works effectively and ineffectively in certain respects,
+it have several severe bottlenecks when handling several connections at once. LightNet is a one to one network manager that
+can scale without bottlenecks and being made simplier than the ViewNet.
+
+LightNet is now being structured as:
+
+Manager -> Handlers (IHandle) -> Transformers (ITransform) -> Net Layer (TCP or UDP reliable stream)
+
+Manager will vertify all Handlers and Transformers ensuring that each of them will not conflicts with another on how it will
+identify one another in the packet, but Manager is a lightweight tool for keeping track of different services and handlers.
+It figure out the identity of the other side of the connection and handle the login and cryptographical process for an example,
+withholding the service level processing until login are vertified is the responsibility of the manager. It is also
+Manager responsibility to handle disconnection when necessary.
+LightNet Manager object for this project is the Bareback Manager and it is also an Abstract ensuring that
+developer will be required to write his/her own manager on top of LightNet Manager.
+
+Handlers are for handling packet routing, user login, and so forth. It is an automatic process that allow
+the network to be more flexible and efficient and it is similar to a Service however. This structure has yet to be decided
+on how it is going to be implemented since Transformer layer is still in development.
+
+Transformers are for steps that can scramble packet with cryptography or to do compression process. This step will be applied
+to all packets. It uses 256 representable states byte prefix in a packet to identify which
+process is necessary to apply for each packet. This is applied to all packet when Manager have at least 1 Transformer applied,
+this prefix however will be ignored if Manager does not have any transformer applied. 
+
+For Cryptographic Transformer regarding MAC...
+Message Authenication Code (MAC) is going to be implemented at the Transformer layer to ensure that message
+aren't being tampered with. Once MAC have an error, all packets exchanges will halt except for an error packet to address
+the client that the connection have been tampered with, it will then drop the connection immediately.
+Reason of this being is purely with the fact that it is exceedingly difficult to reconstruct
+the network stream when it have been tampered with, so it is best to drop connection and attempt to
+reinitate connection at another time or immediately to ensure other layers and processes
+take the necessary precaution to recover from this issue.
+
+Net Layer is the intermission layer between TCP or UDP Socket and Packet objects handling. It's sole responsibility is to
+enqueue and dequeue packets from and to network stream and ensure that the network stream are in order. UDP layer
+will be implemented when Transformer, Handler and Manager are implemented. UDP is considered secondary at this point.
+
+In the future, it is planned that there will be a Domain Level for Manager, Handler, Transformer and Services to accept
+and handle multiple connections and clients.
+
+Note: Domain Level Transformer have been yet to be seen for any pros, so it may be left out in development until it's purpose
+could be found.

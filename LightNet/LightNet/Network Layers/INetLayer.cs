@@ -14,25 +14,20 @@
    limitations under the License.
 */
 
+using System;
+using System.Net;
+using System.Threading.Tasks;
+
 namespace LightNet
 {
-    public class Packet
-    {
-        protected PacketID _ID;
-        protected byte[] _RawContent;
-
-        public PacketID ID { get { return _ID; } set { _ID = value; } }
-        public byte[] RawContent { get { return _RawContent; } set { _RawContent = value; } }
-
-        public Packet()
-        {
-
-        }
-
-        public Packet(PacketID id, byte[] content)
-        {
-            _ID = id;
-            _RawContent = content;
-        }
-    }
+	public interface INetLayer
+	{
+		Task Connect(IPEndPoint addr);
+		void Start();
+		void Stop();
+		Packet DequeuePacket();
+		void EnqueuePacket(Packet packet);
+		void Dispose();
+	}
 }
+

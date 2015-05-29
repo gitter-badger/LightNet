@@ -104,7 +104,7 @@ namespace LightNet
                 var genericDeserializerMethod = typeof(BoisSerializer).GetMethods().Where(I => I.Name == "Deserialize").
                     First(I => I.GetParameters()[0].ParameterType == typeof(Stream)).MakeGenericMethod(IDToType[_attemptedTypeID]);
                 object output = genericDeserializerMethod.Invoke(Serializer, new[] { InStream });
-                ClearAndCopyMemoryStream(ref InStream, 5 + _attemptedLength);
+                DataUtility.ClearAndCopyMemoryStream(ref InStream, 5 + _attemptedLength);
                 return output;
 			}
 		}
@@ -123,7 +123,7 @@ namespace LightNet
 				var fixLength = OutStream.Read (data, 0, data.Length);
 				Array.Resize (ref data, fixLength);
 
-				ClearAndCopyMemoryStream (ref OutStream, data.Length);
+				DataUtility.ClearAndCopyMemoryStream (ref OutStream, data.Length);
 				return data;
 			}
 		}
@@ -134,21 +134,6 @@ namespace LightNet
 				InStream.Seek (0, SeekOrigin.End);
 				InStream.Write (data, 0, data.Length);
 			}
-		}
-
-		static void ClearAndCopyMemoryStream (ref MemoryStream memStream, int length)
-		{
-			var BufferedCopy = new byte[memStream.Length - length];
-			if (BufferedCopy.Length == 0) {
-				memStream.Dispose ();
-				memStream = new MemoryStream ();
-				return;
-			}
-
-			Array.ConstrainedCopy (memStream.ToArray (), length, BufferedCopy, 0, BufferedCopy.Length);
-			memStream.Dispose ();
-			memStream = new MemoryStream ();
-			memStream.Write (BufferedCopy, 0, BufferedCopy.Length);
 		}
 	}
 }

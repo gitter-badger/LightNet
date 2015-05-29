@@ -15,19 +15,35 @@
 */
 
 using System;
-using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LightNet
 {
-	public sealed class NetworkConfiguration
-	{
-		public IPAddress DestinationIPAddress;
-		public ushort DestinationPort;
-		public uint MinimumSymmetricKeyStrength = 128;
-		/// <summary>
-		/// Begin another key exchange cycle per 'this' amount of exchanges
-		/// </summary>
-		public uint KeyCycle = 10000;
-	}
+    public class LightNet : IDisposable
+    {
+        #region Private Fields
+
+        #endregion
+        #region Constructor
+		public LightNet()
+        {
+        }
+        #endregion
+        #region Public Methods
+        public void Start()
+        {
+
+        }
+
+        public void Stop()
+        {
+        }
+
+        public void Dispose()
+        {
+        }
+        #endregion
+    }
 }
 

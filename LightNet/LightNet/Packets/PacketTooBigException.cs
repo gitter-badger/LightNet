@@ -14,21 +14,19 @@
    limitations under the License.
 */
 
+using System;
+
 namespace LightNet
 {
-    public enum PacketID : byte
-    {
-        Login,
-        LoginReply,
-        AgreementRequest, 
-        AgreementReply,
-        AgreementNotify,
-        AgreementPrepared,
-        AgreementError,
-        AgreementRecycle,
-        ServiceMessage,
-        ServiceAdd,
-        ServiceRemove,
-        ServiceMismatch
-    }
+	public class PacketTooBigException : Exception
+	{
+		public PacketTooBigException () : base()
+		{
+		}
+
+		public PacketTooBigException (string message) : base(message)
+		{
+		}
+	}
 }
+

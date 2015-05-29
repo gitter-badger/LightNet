@@ -648,6 +648,26 @@ namespace LightNet
             }
             return input;
         }
+
+		/// <summary>
+		/// Clears certain length of buffer and copy the remaining buffer to a new memory stream on the same reference.
+		/// </summary>
+		/// <param name="memStream">Mem stream.</param>
+		/// <param name="length">Length.</param>
+		public static void ClearAndCopyMemoryStream (ref MemoryStream memStream, int length)
+		{
+			var BufferedCopy = new byte[memStream.Length - length];
+			if (BufferedCopy.Length == 0) {
+				memStream.Dispose ();
+				memStream = new MemoryStream ();
+				return;
+			}
+
+			Array.Copy (memStream.ToArray (), length, BufferedCopy, 0, BufferedCopy.Length);
+			memStream.Dispose ();
+			memStream = new MemoryStream ();
+			memStream.Write (BufferedCopy, 0, BufferedCopy.Length);
+		}
         #endregion
     }
 }

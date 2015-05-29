@@ -13,14 +13,27 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
-namespace LightNet
+using System;
+using SuperInteger;
+namespace TestSuperInteger
 {
-    /// <summary>
-    /// Cryptography Layer for an Individual Client
-    /// </summary>
-    public class CryptoLayer : NetworkLayer
-    {
-        
-    }
+	class MainClass
+	{
+		public static void Main (string[] args)
+		{
+			var Sample = new Integer ();
+			Sample += new Integer(555);
+			Sample = Integer.Pow (Sample, 2);
+			var output = Sample.ToBytes ();
+			var Test = new Integer (output);
+			Console.WriteLine (Sample.ToString ());
+			Console.WriteLine ();
+			Console.WriteLine (Test.ToString ());
+			if (Sample.IsEqual(Test))
+				Console.WriteLine ("Success");
+			else
+				Console.WriteLine ("Failed");
+			Console.ReadLine ();
+		}
+	}
 }
