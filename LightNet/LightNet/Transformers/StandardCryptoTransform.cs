@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Org.BouncyCastle;
@@ -25,11 +26,12 @@ namespace LightNet
 {
 	public enum StandardCryptoPacketID : byte
 	{
+		Normal,
 		AgreementRequest,
 		AgreementResponse,
 		PreparedEnc,
 		NotifyEnc,
-		Normal
+		AgreementError
 	}
 
 	public class StandardCryptoTransform : ITransform, IDisposable
@@ -37,16 +39,30 @@ namespace LightNet
 		int Disposed;
 		CancellationTokenSource CancelSource = new CancellationTokenSource();
 		DiffieHellman CommonDH = new DiffieHellman();
+		byte Offset = 0;
+		Rijndael Rij;
+		DateTime CheckForKeyChangeTime = DateTime.UtcNow;
+		bool IsTheConnectionInitator = false;
+		volatile bool FirstExchange = false;
+
+		/// <summary>
+		/// It a cycle which is used to indicate how many times key have been changed.
+		/// </summary>
+		long CryptoCycle = 0;
 
 		public StandardCryptoTransform ()
 		{
+			Rij.Padding = PaddingMode.PKCS7;
+			Rij.BlockSize = 256;
+			Rij.KeySize = 256;
+			Rij.Mode = CipherMode.CBC;
 		}
 
 		public event EventHandler ConnectionFailureEvent;
 
 		public int OffsetUsageCount {
 			get {
-				throw new NotImplementedException ();
+				return 6;
 			}
 		}
 
@@ -108,11 +124,65 @@ namespace LightNet
 
 		}
 
+		/// <summary>
+		/// Check the Time and Crypto Cycle as well as Initator Boolean to vertify if it is needed to change the
+		/// cryptographic keys.
+		/// </summary>
+		void CheckIfNeedToChangeKey()
+		{
+			// Ensure only one side do the initial DH steps.
+			if (IsTheConnectionInitator)
+				return;
+
+			if (CheckForKeyChangeTime < DateTime.UtcNow && Interlocked.Read (ref CryptoCycle) >= 2) {
+				CheckForKeyChangeTime = DateTime.UtcNow.AddSeconds (30);
+				SendDHRequest ();
+			}
+
+			if (CryptoCycle < 2) {
+
+			}
+		}
+
+		void SetToNewCryptoKey ()
+		{
+			lock (CommonDH)
+				Array.Copy (CommonDH.Key, Rij.Key, Rij.Key.Length);
+		}
+
+		async Task SendDHRequest()
+		{
+			TransformedOutgoingPacketQueue.Enqueue (new Packet (StandardCryptoPacketID.AgreementRequest,
+				await GenerateRequestDH ()));
+		}
+
+		async Task SendDHResponse(byte[] response)
+		{
+			TransformedOutgoingPacketQueue.Enqueue (new Packet (StandardCryptoPacketID.AgreementResponse,
+				await GenerateResponseDH (response)));
+		}
+
 		async Task<byte[]> GenerateRequestDH()
 		{
 			return await Task.Factory.StartNew<byte[]> (delegate {
 				lock (CommonDH)
 					return CommonDH.GenerateRequest ();
+			});
+		}
+
+		async Task<byte[]> GenerateResponseDH(byte[] requestData)
+		{
+			return await Task.Factory.StartNew<byte[]> (delegate {
+				lock (CommonDH)
+					return CommonDH.GenerateResponse (requestData);
+			});
+		}
+
+		async Task GenerateRequestDH(byte[] responseData)
+		{
+			await Task.Factory.StartNew(delegate {
+				lock (CommonDH)
+					CommonDH.HandleResponse (responseData);
 			});
 		}
 
@@ -122,9 +192,12 @@ namespace LightNet
 		}
 
 		#endregion
-		public void OffsetForPacketID (int offset)
+		public void Initialize (bool initate, byte offset)
 		{
-			throw new NotImplementedException ();
+			if (OffsetUsageCount + offset > byte.MaxValue)
+				throw new ArgumentOutOfRangeException ("You've used up the available representable identifiers for Transformer Layer.");
+			Offset = offset;
+			IsTheConnectionInitator = initate;
 		}
 
 		public void Dispose()
@@ -132,7 +205,19 @@ namespace LightNet
 			if (Interlocked.Exchange (ref Disposed, 1) != 0)
 				return;
 
+			CancelSource.Cancel ();
 
+			if (!Object.ReferenceEquals (TransformedIncomingPacketQueue, null))
+				TransformedIncomingPacketQueue = null;
+
+			if (!Object.ReferenceEquals (TransformedOutgoingPacketQueue, null))
+				TransformedOutgoingPacketQueue = null;
+			
+			if (!Object.ReferenceEquals (UntransformedIncomingPacketQueue, null))
+				UntransformedIncomingPacketQueue = null;
+			
+			if (!Object.ReferenceEquals (UntransformedOutgoingPacketQueue, null))
+				UntransformedOutgoingPacketQueue = null;
 		}
 	}
 }

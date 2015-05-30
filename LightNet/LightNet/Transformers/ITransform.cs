@@ -38,9 +38,13 @@ namespace LightNet
 		void EnqueueTransformedPacket(Packet packet);
 		Packet DequeueUntransformedPacket();
 
-		// Informing the Transform Layer which range of Packet ID is acceptable to use internally.
-		void OffsetForPacketID(int offset);
-
+		/// <summary>
+		/// Initialize the Transformer by setting wheither or not if client initate the connection
+		/// or accepted the connection. And to assign which range of identifiers the transformer will use.
+		/// </summary>
+		/// <param name="initate">Set to true if initated connection, otherwise false</param>
+		/// <param name="offset">Set offset for which range of identifiers to use.</param>
+		void Initialize(bool initate, byte offset);
 		/// <summary>
 		/// Occurs when connection failure occured.
 		/// Ex. Message Authenication Code Vertified That Something Has Been Tampered With.
