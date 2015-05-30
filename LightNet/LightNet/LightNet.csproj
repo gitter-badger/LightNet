@@ -43,14 +43,14 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\packages\BouncyCastle.1.7.0\lib\Net40-Client\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="FsMpir.NET">
       <HintPath>..\packages\Mpir.NET.0.2.3\lib\net40\FsMpir.NET.dll</HintPath>
     </Reference>
     <Reference Include="Mpir.NET">
       <HintPath>..\packages\Mpir.NET.0.2.3\lib\net40\Mpir.NET.dll</HintPath>
     </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -66,6 +66,7 @@
     <Compile Include="Transformers\StandardCryptoTransform.cs" />
     <Compile Include="Crypto\DiffieHellman.cs" />
     <Compile Include="Crypto\OSCheck.cs" />
+    <Compile Include="Transformers\DHAESConversion.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Org.BouncyCastle;
 using Org.BouncyCastle.Crypto;
+using System.IO;
 
 namespace LightNet
 {
@@ -41,9 +42,12 @@ namespace LightNet
 		DiffieHellman CommonDH = new DiffieHellman();
 		byte Offset = 0;
 		Rijndael Rij;
+		byte[] NewKey = new byte[32];
+		byte[] CurrentKey = new byte[32];
 		DateTime CheckForKeyChangeTime = DateTime.UtcNow;
 		bool IsTheConnectionInitator = false;
 		volatile bool FirstExchange = false;
+		volatile bool ActiveExchange = false;
 
 		/// <summary>
 		/// It a cycle which is used to indicate how many times key have been changed.
@@ -124,23 +128,32 @@ namespace LightNet
 
 		}
 
+		void EncryptWithNewKey(ref Packet input)
+		{
+			using (var output = new MemoryStream ()) {
+				Rij.GenerateIV ();
+				Rij.Key = NewKey;
+				DataUtility.WriteOnlyBytesToStream (Rij.IV, output);
+				DataUtility.WriteOnlyBytesToStream (Rij.CreateEncryptor ().TransformFinalBlock
+					(input.RawContent, 0, input.RawContent.Length), output);
+				Rij.Key = CurrentKey;
+				input.RawContent = output.ToArray ();
+			}
+		}
+
 		/// <summary>
 		/// Check the Time and Crypto Cycle as well as Initator Boolean to vertify if it is needed to change the
 		/// cryptographic keys.
 		/// </summary>
 		void CheckIfNeedToChangeKey()
 		{
-			// Ensure only one side do the initial DH steps.
-			if (IsTheConnectionInitator)
+			if (IsTheConnectionInitator || ActiveExchange)
 				return;
-
-			if (CheckForKeyChangeTime < DateTime.UtcNow && Interlocked.Read (ref CryptoCycle) >= 2) {
+			
+			if (CheckForKeyChangeTime < DateTime.UtcNow && Interlocked.Read (ref CryptoCycle) >= 2 || CryptoCycle < 2) {
+				ActiveExchange = true;
 				CheckForKeyChangeTime = DateTime.UtcNow.AddSeconds (30);
 				SendDHRequest ();
-			}
-
-			if (CryptoCycle < 2) {
-
 			}
 		}
 
@@ -152,13 +165,13 @@ namespace LightNet
 
 		async Task SendDHRequest()
 		{
-			TransformedOutgoingPacketQueue.Enqueue (new Packet (StandardCryptoPacketID.AgreementRequest,
+			TransformedOutgoingPacketQueue.Enqueue (new Packet ((byte)StandardCryptoPacketID.AgreementRequest,
 				await GenerateRequestDH ()));
 		}
 
 		async Task SendDHResponse(byte[] response)
 		{
-			TransformedOutgoingPacketQueue.Enqueue (new Packet (StandardCryptoPacketID.AgreementResponse,
+			TransformedOutgoingPacketQueue.Enqueue (new Packet ((byte)StandardCryptoPacketID.AgreementResponse,
 				await GenerateResponseDH (response)));
 		}
 
